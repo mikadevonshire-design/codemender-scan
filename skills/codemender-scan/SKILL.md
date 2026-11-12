@@ -137,18 +137,28 @@ gcloud services list --enabled --project=<PROJECT_ID> \
   ```
   If the user doesn't have permission, they should send this command to their project admin.
 
-### 3. Verify Access & Health
+### 3. Prepare the Repo
+Every `cm` command:
+- Runs from the root of the repo being scanned.
+- Is prefixed with `CM_HOME="$PWD/.codemender"`, so each repo keeps its own CodeMender state, findings, and logs.
+- Is also prefixed with `GOOGLE_CLOUD_PROJECT=<PROJECT_ID>` if it talks to the backend (`health`, `init`, `find`, `find verify`, `fix`).
+
+Before the first `cm` command, the agent adds `.codemender/` to the repo's `.gitignore` (only if it isn't already ignored), then tells the user it did:
+```bash
+git check-ignore -q .codemender/ || {
+  [ -s .gitignore ] && [ -n "$(tail -c1 .gitignore)" ] && echo >> .gitignore
+  echo ".codemender/" >> .gitignore
+}
+```
+This keeps CodeMender's state out of commits and preserves it when `cm` cleans the working tree (e.g. during `cm find verify`).
+
+### 4. Verify Access & Health
 `cm health` checks credentials, config, reachability, and authorization in one go. The agent uses it as the access check:
 ```bash
 CM_HOME="$PWD/.codemender" GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm health
 ```
 
-> **Environment for every `cm` command:**
-> - Run it from the root of the repo being scanned.
-> - Prefix it with `CM_HOME="$PWD/.codemender"`, so each repo keeps its own CodeMender state, findings, and logs.
-> - For commands that talk to the backend (`health`, `init`, `find`, `find verify`, `fix`), also prefix `GOOGLE_CLOUD_PROJECT=<PROJECT_ID>`.
->
-> Confirm the `Project:` line in the `cm health` output matches `<PROJECT_ID>` before scanning.
+Confirm the `Project:` line in the output matches `<PROJECT_ID>` before scanning.
 
 - **Credentials expired or missing:** the user runs:
   ```bash
