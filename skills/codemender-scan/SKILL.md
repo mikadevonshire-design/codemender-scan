@@ -28,22 +28,40 @@ When activated (or invoked via `/codemender-scan`), the agent guides you through
 
 The agent checks if the CodeMender CLI (`cm`) is installed in your `$PATH`:
 ```bash
-which cm
+which cm          # Linux / macOS
+where.exe cm      # Windows (PowerShell)
 ```
 
-### If `cm` is NOT installed:
-The agent stops and provides the quick download instructions:
+If `cm` is found, skip to Phase 1. If it's outdated, the user can run `cm update` (prefix with `sudo` if it lives in a system directory).
 
-**For Linux (x86_64) / Cloudtop:**
+### If `cm` is NOT installed
+
+> **Access note:** The CodeMender CLI is in Public Preview for a limited set of customers. If downloads fail with 403/404, the user needs to request access through their Google Cloud sales team.
+
+The agent **does not install anything itself**. It detects the platform, then shows the user the exact commands to run.
+
+#### 1. Detect the platform
 ```bash
-curl -L -o cm-linux-amd64.zip \
-  "https://artifactregistry.googleapis.com/download/v1/projects/cmoc-prod/locations/us/repositories/codemender-cli-production/files/cm%3Astable%3Acm-linux-amd64.zip:download?alt=media"
-unzip -o cm-linux-amd64.zip
-chmod +x cm
-sudo mv cm /usr/local/bin/cm
+uname -sm                          # Linux / macOS, e.g. "Linux x86_64", "Darwin arm64"
+```
+```powershell
+$env:PROCESSOR_ARCHITECTURE        # Windows, e.g. "AMD64", "ARM64"
 ```
 
-**For macOS (or via gcloud):**
+#### 2. Pick the matching file
+
+| Platform | `uname -sm` / Windows arch | `<FILE>` |
+| :--- | :--- | :--- |
+| Linux x86_64 | `Linux x86_64` | `cm-linux-amd64.zip` |
+| Linux ARM64 | `Linux aarch64` | `cm-linux-arm64.zip` |
+| macOS Intel | `Darwin x86_64` | `cm-darwin-amd64.zip` |
+| macOS Apple silicon | `Darwin arm64` | `cm-darwin-arm64.zip` |
+| Windows x86_64 | `AMD64` | `cm-windows-amd64.zip` |
+| Windows ARM64 | `ARM64` | `cm-windows-arm64.zip` |
+
+#### 3. Download (replace `<FILE>`)
+
+**Option A: gcloud (all platforms, preferred)**
 ```bash
 gcloud artifacts generic download \
   --project=cmoc-prod \
@@ -51,12 +69,43 @@ gcloud artifacts generic download \
   --repository=codemender-cli-production \
   --package=cm \
   --version=stable \
-  --name=cm-linux-amd64.zip \
+  --name=<FILE> \
   --destination=./
-unzip -o cm-linux-amd64.zip
+```
+(On Windows PowerShell, use a backtick `` ` `` instead of `\` for line continuation.)
+
+**Option B: curl (Linux / macOS)**
+```bash
+curl -L -o <FILE> \
+  "https://artifactregistry.googleapis.com/download/v1/projects/cmoc-prod/locations/us/repositories/codemender-cli-production/files/cm%3Astable%3A<FILE>:download?alt=media"
+```
+
+**Option C: PowerShell (Windows)**
+```powershell
+Invoke-WebRequest `
+  -Uri "https://artifactregistry.googleapis.com/download/v1/projects/cmoc-prod/locations/us/repositories/codemender-cli-production/files/cm%3Astable%3A<FILE>:download?alt=media" `
+  -OutFile <FILE>
+```
+
+#### 4. Install
+
+**Linux / macOS**
+```bash
+unzip -o <FILE>
 chmod +x cm
 sudo mv cm /usr/local/bin/cm
+cm --version
 ```
+
+**Windows (PowerShell)**
+```powershell
+Expand-Archive -Path <FILE> -DestinationPath ./
+# Move cm.exe to a permanent folder (e.g. C:\Tools\cm) and add that folder to your PATH.
+cm --version
+```
+
+If anything here fails, the source of truth is the official guide:
+https://docs.cloud.google.com/gemini-enterprise-agent-platform/agents/codemender/set-up-environment#download-cli
 
 ---
 
