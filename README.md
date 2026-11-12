@@ -89,7 +89,7 @@ flowchart TD
 - **Zero False-Positive Fatigue**: Unlike traditional static scanners, CodeMender allows you to run `cm find verify <id>` to synthesize and execute an active Proof-of-Concept (PoC) exploit in a local sandbox to prove exploitability.
 - **Automated Verified Patching**: Run `cm fix <id>` to synthesize fixes, execute test suites (`rspec`, `pytest`, `npm test`), and verify that the vulnerability is closed without regressions.
 - **Plain-English Reporting**: Translates complex CWE vulnerability classifications and code traces into plain business-impact summaries.
-- **Self-Contained Artifacts**: Automatically saves structured JSON findings and executive summaries to `./reports/codemender/`.
+- **Self-Contained Artifacts**: Automatically saves structured JSON findings and executive summaries to `.codemender/reports/` in the scanned repo (git-ignored automatically).
 
 ---
 

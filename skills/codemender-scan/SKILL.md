@@ -204,7 +204,9 @@ The agent asks:
 If provided, the agent passes `-c "<context>"` to guide CodeMender's reasoning.
 
 ### 5. Report Destination
-Default: `./reports/codemender/`
+Default: `.codemender/reports/`
+
+If the user picks a path outside `.codemender/`, the agent adds that path to `.gitignore` too, using the same check as Phase 1, step 3.
 
 ---
 
