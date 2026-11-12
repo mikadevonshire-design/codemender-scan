@@ -121,6 +121,8 @@ gcloud config get-value project
 It prompts:
 > *"Which GCP project allowlisted for CodeMender / Fairwind Cyber models should we use? (Default: `<active-project>`)"*
 
+If no active project is set, the agent asks for a project ID with no default.
+
 ### 2. Check Required APIs
 The project needs two APIs turned on. The agent checks them (read-only):
 ```bash
