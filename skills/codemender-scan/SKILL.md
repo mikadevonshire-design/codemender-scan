@@ -141,7 +141,7 @@ gcloud services list --enabled --project=<PROJECT_ID> \
 Every `cm` command:
 - Runs from the root of the repo being scanned.
 - Is prefixed with `CM_HOME="$PWD/.codemender"`, so each repo keeps its own CodeMender state, findings, and logs.
-- Is also prefixed with `GOOGLE_CLOUD_PROJECT=<PROJECT_ID>` if it talks to the backend (`health`, `init`, `find`, `find verify`, `fix`).
+- Is also prefixed with `GOOGLE_CLOUD_PROJECT=<PROJECT_ID>` if it talks to the backend (`health`, `init`, `find`, `verify`, `fix`).
 
 Before the first `cm` command, the agent adds `.codemender/` to the repo's `.gitignore` (only if it isn't already ignored), then tells the user it did:
 ```bash
@@ -150,7 +150,7 @@ git check-ignore -q .codemender/ || {
   echo ".codemender/" >> .gitignore
 }
 ```
-This keeps CodeMender's state out of commits and preserves it when `cm` cleans the working tree (e.g. during `cm find verify`).
+This keeps CodeMender's state out of commits and preserves it when `cm` cleans the working tree (e.g. during `cm verify`).
 
 ### 4. Initialize the Workspace
 If `.codemender/config.yaml` doesn't exist yet, the agent creates the workspace:
@@ -191,8 +191,8 @@ Confirm the `Project:` line in the output matches `<PROJECT_ID>` before scanning
 The agent prompts for the following 5 settings:
 
 ### 1. Scan Mode
-- **Quick Scan (`--quick`)**: Fast single-session scan (typically 3–8 minutes).
-- **Deep Scan (Default)**: Exhaustive file-by-file concurrent audit across the entire codebase.
+- **Deep Scan (Default)**: Exhaustive file-by-file concurrent audit across the entire codebase. No flag needed.
+- **Quick Scan (`--quick`)**: Fast single-session scan (typically 3–8 minutes). May have false positives; use `cm verify` to triage.
 
 ### 2. Target Directory or Repository
 - **Current Workspace**: Scan the current folder (`.`)
@@ -251,6 +251,6 @@ Instead of raw compiler traces, the agent presents:
    - **Where it is**: Exact file and line numbers.
    - **Why it matters**: The business and security risk.
 3. **1-Click Next Steps**:
-   - **Prove Exploitability**: `CM_HOME="$PWD/.codemender" GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm find verify <finding-id>` (Generates and runs an active PoC exploit in an isolated sandbox).
+   - **Prove Exploitability**: `CM_HOME="$PWD/.codemender" GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm verify <finding-id>` (Generates and runs an active PoC exploit in an isolated sandbox).
    - **Auto-Fix**: `CM_HOME="$PWD/.codemender" GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm fix <finding-id>` (Generates a verified, non-regressing patch).
    - **Open Visual Report**: `CM_HOME="$PWD/.codemender" cm report --format html --open` (Opens full interactive HTML report in browser).
