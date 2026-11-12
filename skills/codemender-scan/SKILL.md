@@ -140,10 +140,15 @@ gcloud services list --enabled --project=<PROJECT_ID> \
 ### 3. Verify Access & Health
 `cm health` checks credentials, config, reachability, and authorization in one go. The agent uses it as the access check:
 ```bash
-GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm health
+CM_HOME="$PWD/.codemender" GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm health
 ```
 
-> Prefix every `cm health`, `cm find`, `cm find verify`, and `cm fix` with `GOOGLE_CLOUD_PROJECT=<PROJECT_ID>`. Confirm the `Project:` line in the `cm health` output matches `<PROJECT_ID>` before scanning.
+> **Environment for every `cm` command:**
+> - Run it from the root of the repo being scanned.
+> - Prefix it with `CM_HOME="$PWD/.codemender"`, so each repo keeps its own CodeMender state, findings, and logs.
+> - For commands that talk to the backend (`health`, `init`, `find`, `find verify`, `fix`), also prefix `GOOGLE_CLOUD_PROJECT=<PROJECT_ID>`.
+>
+> Confirm the `Project:` line in the `cm health` output matches `<PROJECT_ID>` before scanning.
 
 - **Credentials expired or missing:** the user runs:
   ```bash
@@ -199,7 +204,7 @@ The agent executes the scan with auto-approval (`-y`):
 
 ```bash
 mkdir -p <REPORT_DIR>
-GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm find <TARGET> \
+CM_HOME="$PWD/.codemender" GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm find <TARGET> \
   --model <MODEL_NAME> \
   [--quick] \
   [-c "<CONTEXT>"] \
@@ -208,8 +213,8 @@ GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm find <TARGET> \
 
 Once complete, the agent automatically exports the report files:
 ```bash
-cm report --format json > <REPORT_DIR>/findings.json
-cm report --format table > <REPORT_DIR>/summary.txt
+CM_HOME="$PWD/.codemender" cm report --format json > <REPORT_DIR>/findings.json
+CM_HOME="$PWD/.codemender" cm report --format table > <REPORT_DIR>/summary.txt
 ```
 
 ---
@@ -224,6 +229,6 @@ Instead of raw compiler traces, the agent presents:
    - **Where it is**: Exact file and line numbers.
    - **Why it matters**: The business and security risk.
 3. **1-Click Next Steps**:
-   - **Prove Exploitability**: `GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm find verify <finding-id>` (Generates and runs an active PoC exploit in an isolated sandbox).
-   - **Auto-Fix**: `GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm fix <finding-id>` (Generates a verified, non-regressing patch).
-   - **Open Visual Report**: `cm report --format html --open` (Opens full interactive HTML report in browser).
+   - **Prove Exploitability**: `CM_HOME="$PWD/.codemender" GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm find verify <finding-id>` (Generates and runs an active PoC exploit in an isolated sandbox).
+   - **Auto-Fix**: `CM_HOME="$PWD/.codemender" GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm fix <finding-id>` (Generates a verified, non-regressing patch).
+   - **Open Visual Report**: `CM_HOME="$PWD/.codemender" cm report --format html --open` (Opens full interactive HTML report in browser).
