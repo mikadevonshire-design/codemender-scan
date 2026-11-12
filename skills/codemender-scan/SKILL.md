@@ -152,7 +152,17 @@ git check-ignore -q .codemender/ || {
 ```
 This keeps CodeMender's state out of commits and preserves it when `cm` cleans the working tree (e.g. during `cm find verify`).
 
-### 4. Verify Access & Health
+### 4. Initialize the Workspace
+If `.codemender/config.yaml` doesn't exist yet, the agent creates the workspace:
+```bash
+[ -f .codemender/config.yaml ] || \
+  CM_HOME="$PWD/.codemender" GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm init
+```
+Success looks like `✅ Initialized CodeMender workspace at <repo>/.codemender`.
+
+If the output says **"Resource setup has just started"**, the backend is provisioning the project. Wait a few minutes, then continue.
+
+### 5. Verify Access & Health
 `cm health` checks credentials, config, reachability, and authorization in one go. The agent uses it as the access check:
 ```bash
 CM_HOME="$PWD/.codemender" GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm health
