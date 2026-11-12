@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "description": "Streamlined, beginner-friendly vulnerability scanning with Google CodeMender CLI (cm) and Fairwind Cyber models for Antigravity.",
   "author": "Mika Devonshire",
-  "homepage": "https://github.com/mikadevonshire/codemender-scan",
-  "repository": "https://github.com/mikadevonshire/codemender-scan",
+  "homepage": "https://github.com/mikadevonshire-design/codemender-scan",
+  "repository": "https://github.com/mikadevonshire-design/codemender-scan",
   "skills": [
     "skills/codemender-scan"
   ]

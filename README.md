@@ -14,7 +14,7 @@ Designed for security analysts, IT administrators, and non-developers who want s
 Clone this repository directly into your Antigravity plugins directory:
 
 ```bash
-git clone https://github.com/mikadevonshire/codemender-scan.git ~/.gemini/config/plugins/codemender-scan
+git clone https://github.com/mikadevonshire-design/codemender-scan.git ~/.gemini/config/plugins/codemender-scan
 ```
 
 *That's it! Antigravity automatically detects the plugin and enables the `/codemender-scan` slash command across all your workspaces.*
