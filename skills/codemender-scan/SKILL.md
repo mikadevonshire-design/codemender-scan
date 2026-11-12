@@ -119,19 +119,45 @@ The agent checks your default active project:
 gcloud config get-value project
 ```
 It prompts:
-> *"Which GCP project allowlisted for CodeMender / Fairwind Cyber models should we use? (Default: `codemender-oss` or `<active-project>`)"*
+> *"Which GCP project allowlisted for CodeMender / Fairwind Cyber models should we use? (Default: `<active-project>`)"*
 
-### 2. Verify Health
-The agent runs:
+### 2. Check Required APIs
+The project needs two APIs turned on. The agent checks them (read-only):
 ```bash
-CLOUDSDK_CORE_PROJECT=<PROJECT_ID> cm health
+gcloud services list --enabled --project=<PROJECT_ID> \
+  --filter="config.name:(aiplatform.googleapis.com cloudresourcemanager.googleapis.com)" \
+  --format="value(config.name)"
 ```
 
-- **If credentials expired:** The agent instructs you to run:
+- **Both names printed:** continue.
+- **One or both missing:** the agent shows the command below and runs it **only if the user confirms**. Turning on APIs changes the project and needs the Service Usage Admin or Owner role:
+  ```bash
+  gcloud services enable aiplatform.googleapis.com cloudresourcemanager.googleapis.com \
+    --project=<PROJECT_ID>
+  ```
+  If the user doesn't have permission, they should send this command to their project admin.
+
+### 3. Verify Access & Health
+`cm health` checks credentials, config, reachability, and authorization in one go. The agent uses it as the access check:
+```bash
+GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm health
+```
+
+> Prefix every `cm health`, `cm find`, `cm find verify`, and `cm fix` with `GOOGLE_CLOUD_PROJECT=<PROJECT_ID>`. Confirm the `Project:` line in the `cm health` output matches `<PROJECT_ID>` before scanning.
+
+- **Credentials expired or missing:** the user runs:
   ```bash
   gcloud auth application-default login
   ```
-- **If HTTP 403 Forbidden:** The project is not yet allowlisted on the CodeMender backend. The agent prompts for an alternate allowlisted project.
+- **HTTP 403 / authorization failed:** check these in order:
+  1. **Missing IAM role.** The signed-in account needs `roles/aiplatform.user` (Agent Platform User). A project admin can grant it:
+     ```bash
+     gcloud projects add-iam-policy-binding <PROJECT_ID> \
+       --member="user:<EMAIL>" \
+       --role="roles/aiplatform.user"
+     ```
+     `cm` uses Application Default Credentials, so `<EMAIL>` is the account the user signed in with during `gcloud auth application-default login`. That may differ from `gcloud config get-value account`.
+  2. **Project not allowlisted.** CodeMender is in limited Public Preview. If the role is in place and it still fails, the project isn't allowlisted. The agent asks for another allowlisted project, or tells the user to request access through their Google Cloud sales team.
 
 ---
 
@@ -173,7 +199,7 @@ The agent executes the scan with auto-approval (`-y`):
 
 ```bash
 mkdir -p <REPORT_DIR>
-CLOUDSDK_CORE_PROJECT=<PROJECT_ID> cm find <TARGET> \
+GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm find <TARGET> \
   --model <MODEL_NAME> \
   [--quick] \
   [-c "<CONTEXT>"] \
@@ -198,6 +224,6 @@ Instead of raw compiler traces, the agent presents:
    - **Where it is**: Exact file and line numbers.
    - **Why it matters**: The business and security risk.
 3. **1-Click Next Steps**:
-   - **Prove Exploitability**: `cm find verify <finding-id>` (Generates and runs an active PoC exploit in an isolated sandbox).
-   - **Auto-Fix**: `cm fix <finding-id>` (Generates a verified, non-regressing patch).
+   - **Prove Exploitability**: `GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm find verify <finding-id>` (Generates and runs an active PoC exploit in an isolated sandbox).
+   - **Auto-Fix**: `GOOGLE_CLOUD_PROJECT=<PROJECT_ID> cm fix <finding-id>` (Generates a verified, non-regressing patch).
    - **Open Visual Report**: `cm report --format html --open` (Opens full interactive HTML report in browser).
