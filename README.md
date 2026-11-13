@@ -63,7 +63,7 @@ Before scanning, it checks your GCP project: it detects your active project (or 
 
 ## 📋 Prerequisites
 
-1. **Google Cloud SDK (`gcloud`) & Credentials**:
+1. **Google Cloud CLI (`gcloud`) & Credentials**:
    ```bash
    gcloud auth application-default login
    ```
